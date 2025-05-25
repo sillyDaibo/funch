@@ -1,0 +1,15 @@
+[project]
+name = "funch"
+version = "0.1.0"
+authors = [{ name = "sillydaibo", email = "2100010828@stu.pku.edu.cn" }]
+description = "Simpler version of FunSearch"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project.optional-dependencies]
+test = ["pytest>=7.0", "pytest-cov>=3.0"]
