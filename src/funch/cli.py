@@ -23,7 +23,7 @@ def main():
     )
     parser.add_argument(
         "-m", "--model",
-        default="deepseek-chat",
+        default="deepseek/deepseek-chat",
         help="LLM model to use (default: deepseek-chat)"
     )
     parser.add_argument(
