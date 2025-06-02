@@ -116,7 +116,10 @@ def main():
                 tag=args.run_tag,
                 score_input=score_input
             )
-            result, is_valid, score = workflow.generate(batch_size=args.batch_size)
+            result, is_valid, score = workflow.generate(
+                batch_size=args.batch_size,
+                iterations=args.iterations
+            )
             print(f"Generated function:\n{result}")
             print(f"Validation: {'✅' if is_valid else '❌'}")
             if score is not None:

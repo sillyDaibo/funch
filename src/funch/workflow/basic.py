@@ -1,11 +1,11 @@
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Any
 import os
 from pathlib import Path
 from funch.evaluator.from_template import FromTemplate
 from funch.llm import LLMClient
 from funch.parsers.function_body import parse_function_body
-
-from typing import Any
+from funch.storage.item_storage.storage import ItemStorage
+from funch.storage.string_database.plain_database import PlainStringDatabase
 
 class BasicWorkflow:
     def __init__(
@@ -14,7 +14,8 @@ class BasicWorkflow:
         llm_model: str = "deepseek-chat",
         temperature: float = 0.7,
         tag: Optional[str] = None,
-        score_input: Any = None
+        score_input: Any = None,
+        storage: Optional[ItemStorage] = None
     ):
         """Initialize workflow with template and LLM settings.
         
@@ -37,6 +38,7 @@ class BasicWorkflow:
         self.score_evaluator = self.template_processor.build_score_evaluator(
             tag, score_input
         )
+        self.storage = storage if storage is not None else ItemStorage(PlainStringDatabase())
         self.prompt_header = ("Please generate an improved version of this Python function. "
                             "Keep the exact same function signature and docstring. "
                             "Only respond with the full function implementation.")
