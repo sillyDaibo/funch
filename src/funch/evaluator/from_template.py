@@ -6,7 +6,7 @@ import signal
 import ast
 import traceback
 
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Optional
 
 
 class FromTemplate:
