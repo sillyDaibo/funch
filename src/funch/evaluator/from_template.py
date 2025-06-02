@@ -81,7 +81,7 @@ class FromTemplate:
     ######################################
     def build_score_evaluator(
         self,
-        tag: str,
+        tag: Optional[str],
         input: Any,
         timeout_seconds=30,
         failure_score: float = float("-inf"),
@@ -93,7 +93,13 @@ class FromTemplate:
                 self.raw_template, module="funch", name="run", with_args=False
             )
         }
-        if tag not in raw_funcs:
+        if tag is None:
+            if not raw_funcs:
+                raise ValueError("No functions decorated with @funch.run found")
+            tag = next(iter(raw_funcs.keys()))
+            if len(raw_funcs) > 1:
+                print(f"Info: Using first found tag '{tag}', multiple available")
+        elif tag not in raw_funcs:
             raise ValueError(f"No function decorated with @funch.run({tag}) found")
         raw_func = raw_funcs[tag]
 

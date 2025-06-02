@@ -8,8 +8,21 @@ from funch.parsers.function_body import parse_function_body
 from typing import Any
 
 class BasicWorkflow:
-    def __init__(self, template_path: str, llm_model: str = "deepseek-chat"):
-        """Initialize workflow with template and LLM settings."""
+    def __init__(
+        self, 
+        template_path: str, 
+        llm_model: str = "deepseek-chat",
+        tag: Optional[str] = None,
+        score_input: Any = None
+    ):
+        """Initialize workflow with template and LLM settings.
+        
+        Args:
+            template_path: Path to template file
+            llm_model: Name of LLM model to use
+            tag: Tag for scoring function (None uses first found)
+            score_input: Input to pass to scoring function
+        """
         if not os.path.exists(template_path):
             raise FileNotFoundError(f"Template file not found: {template_path}")
         
@@ -20,16 +33,14 @@ class BasicWorkflow:
         self.llm = LLMClient(model=llm_model)
         self.function_name = self.template_processor.get_function_name()
         self.validity_checker = self.template_processor.build_validity_checker()
-        self.score_evaluator = None
+        self.score_evaluator = self.template_processor.build_score_evaluator(
+            tag, score_input
+        )
         self.prompt_header = ("Please generate an improved version of this Python function. "
                             "Keep the exact same function signature and docstring. "
                             "Only respond with the full function implementation.")
 
-    def set_score_evaluator(self, tag: str, input: Any):
-        """Configure scoring for the workflow."""
-        self.score_evaluator = self.template_processor.build_score_evaluator(tag, input)
-
-    def generate(self) -> Tuple[str, bool, Optional[float]]:
+    def generate(self) -> Tuple[str, bool, float]:
         """Generate, validate and score a new function version."""
         # Build the prompt
         prompt = (
@@ -55,4 +66,4 @@ class BasicWorkflow:
         if is_valid and self.score_evaluator:
             score = self.score_evaluator(new_body)
 
-        return new_body, is_valid, score
+        return new_body, is_valid, score if score is not None else float("-inf")
