@@ -59,6 +59,12 @@ def main():
         help="Number of candidates to generate and pick best from (default: 1)"
     )
     parser.add_argument(
+        "--iterations",
+        type=int,
+        default=1,
+        help="Number of iterations to run (default: 1)"
+    )
+    parser.add_argument(
         "--score-input",
         default=None,
         help="Score input as JSON string (e.g. '5' or '{\"key\":\"value\"}')"
