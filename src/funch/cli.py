@@ -1,4 +1,5 @@
 import argparse
+import json
 import sys
 from typing import Optional
 from funch.version import __version__
@@ -45,6 +46,17 @@ def main():
         default=None,
         help="Template file to use with workflow if --ask is not set"
     )
+    parser.add_argument(
+        "--score-input",
+        default=None,
+        help="Score input as JSON string (e.g. '5' or '{\"key\":\"value\"}')"
+    )
+    parser.add_argument(
+        "--score-input-file",
+        type=argparse.FileType('r'),
+        default=None,
+        help="File containing Python code returning input value"
+    )
     
     args = parser.parse_args()
     
@@ -57,7 +69,28 @@ def main():
         print(response)
     elif args.template_file:
         if args.workflow == "basic":
-            workflow = BasicWorkflow(args.template_file, args.model)
+            score_input = None
+            if args.score_input:
+                try:
+                    score_input = json.loads(args.score_input)
+                except json.JSONDecodeError:
+                    print("Error: Invalid JSON input")
+                    return
+            elif args.score_input_file:
+                try:
+                    namespace = {}
+                    exec(args.score_input_file.read(), namespace)
+                    score_input = namespace.get('return_value')
+                    args.score_input_file.close()
+                except Exception as e:
+                    print(f"Error loading input file: {e}")
+                    return
+            
+            workflow = BasicWorkflow(
+                args.template_file, 
+                args.model,
+                score_input=score_input
+            )
             result, is_valid, score = workflow.generate()
             print(f"Generated function:\n{result}")
             print(f"Validation: {'✅' if is_valid else '❌'}")
