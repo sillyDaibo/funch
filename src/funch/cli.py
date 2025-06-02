@@ -29,6 +29,12 @@ def main():
         help="LLM model to use (default: deepseek-chat)"
     )
     parser.add_argument(
+        "--temperature",
+        type=float,
+        default=0.7,
+        help="Temperature for LLM generation (default: 0.7)"
+    )
+    parser.add_argument(
         "--ask",
         nargs="?",
         const="",
@@ -75,7 +81,7 @@ def main():
         print(f"funch version {__version__}")
     elif args.ask is not None:
         prompt = args.ask if args.ask else read_stdin_prompt()
-        client = LLMClient(model=args.model)
+        client = LLMClient(model=args.model, temperature=args.temperature)
         response = client.invoke(prompt)
         print(response)
     elif args.template_file:
@@ -100,6 +106,7 @@ def main():
             workflow = BasicWorkflow(
                 args.template_file, 
                 args.model,
+                temperature=args.temperature,
                 tag=args.run_tag,
                 score_input=score_input
             )

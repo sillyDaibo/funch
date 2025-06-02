@@ -12,6 +12,7 @@ class BasicWorkflow:
         self, 
         template_path: str, 
         llm_model: str = "deepseek-chat",
+        temperature: float = 0.7,
         tag: Optional[str] = None,
         score_input: Any = None
     ):
@@ -30,7 +31,7 @@ class BasicWorkflow:
             self.template = f.read()
         
         self.template_processor = FromTemplate(self.template)
-        self.llm = LLMClient(model=llm_model)
+        self.llm = LLMClient(model=llm_model, temperature=temperature)
         self.function_name = self.template_processor.get_function_name()
         self.validity_checker = self.template_processor.build_validity_checker()
         self.score_evaluator = self.template_processor.build_score_evaluator(
