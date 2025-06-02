@@ -57,6 +57,11 @@ def main():
         default=None,
         help="File containing Python code returning input value"
     )
+    parser.add_argument(
+        "--run-tag",
+        default=None,
+        help="Tag of the function to run (default: first found)"
+    )
     
     args = parser.parse_args()
     
@@ -89,6 +94,7 @@ def main():
             workflow = BasicWorkflow(
                 args.template_file, 
                 args.model,
+                tag=args.run_tag,
                 score_input=score_input
             )
             result, is_valid, score = workflow.generate()
