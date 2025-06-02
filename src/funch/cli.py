@@ -47,6 +47,12 @@ def main():
         help="Template file to use with workflow if --ask is not set"
     )
     parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=1,
+        help="Number of candidates to generate and pick best from (default: 1)"
+    )
+    parser.add_argument(
         "--score-input",
         default=None,
         help="Score input as JSON string (e.g. '5' or '{\"key\":\"value\"}')"
@@ -97,7 +103,7 @@ def main():
                 tag=args.run_tag,
                 score_input=score_input
             )
-            result, is_valid, score = workflow.generate()
+            result, is_valid, score = workflow.generate(batch_size=args.batch_size)
             print(f"Generated function:\n{result}")
             print(f"Validation: {'✅' if is_valid else '❌'}")
             if score is not None:

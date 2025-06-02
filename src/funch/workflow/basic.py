@@ -40,30 +40,57 @@ class BasicWorkflow:
                             "Keep the exact same function signature and docstring. "
                             "Only respond with the full function implementation.")
 
-    def generate(self) -> Tuple[str, bool, float]:
-        """Generate, validate and score a new function version."""
-        # Build the prompt
-        prompt = (
-            f"{self.prompt_header}\n\n"
-            f"Current implementation:\n"
-            f"{self.template_processor.get_function_heading()}\n"
-            f"{self.template_processor.get_function_body()}"
-        )
+    def generate(self, batch_size: int = 1) -> Tuple[str, bool, float]:
+        """Generate, validate and score function versions.
         
-        # Get LLM response
-        response = self.llm.invoke(prompt)
+        Args:
+            batch_size: Number of candidates to generate and pick best from
+            
+        Returns:
+            Tuple of (best_function_body, is_valid, highest_score)
+        """
+        best_body = ""
+        best_score = float("-inf")
+        best_is_valid = False
         
-        # Parse function body from response
-        try:
-            new_body = parse_function_body(response, self.function_name)
-        except Exception as e:
-            print(f"Failed to parse function body: {e}")
-            return response, False, None
+        if batch_size > 1:
+            print(f"Running batch of {batch_size} generations...")
+        
+        for i in range(batch_size):
+            # Build the prompt
+            prompt = (
+                f"{self.prompt_header}\n\n"
+                f"Current implementation:\n"
+                f"{self.template_processor.get_function_heading()}\n"
+                f"{self.template_processor.get_function_body()}"
+            )
+            
+            # Get LLM response
+            response = self.llm.invoke(prompt)
+            
+            # Parse function body from response
+            try:
+                new_body = parse_function_body(response, self.function_name)
+            except Exception as e:
+                print(f"Failed to parse function body: {e}")
+                continue
 
-        # Validate and score
-        is_valid = self.validity_checker.is_valid(new_body)
-        score = None
-        if is_valid and self.score_evaluator:
-            score = self.score_evaluator(new_body)
+            # Validate and score
+            is_valid = self.validity_checker.is_valid(new_body)
+            score = float("-inf")
+            if is_valid and self.score_evaluator:
+                score = self.score_evaluator(new_body)
+                if batch_size > 1:
+                    print(f"  Candidate #{i+1} score: {score:.2f} "
+                          f"{'✅' if is_valid else '❌'}")
 
-        return new_body, is_valid, score if score is not None else float("-inf")
+            # Track best candidate
+            if score > best_score:
+                best_body = new_body
+                best_score = score
+                best_is_valid = is_valid
+        
+        if batch_size > 1 and best_score > float("-inf"):
+            print(f"Selected best candidate with score: {best_score:.2f}")
+        
+        return best_body, best_is_valid, best_score
