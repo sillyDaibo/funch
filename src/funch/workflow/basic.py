@@ -5,6 +5,8 @@ from funch.evaluator.from_template import FromTemplate
 from funch.llm import LLMClient
 from funch.parsers.function_body import parse_function_body
 
+from typing import Any
+
 class BasicWorkflow:
     def __init__(self, template_path: str, llm_model: str = "deepseek-chat"):
         """Initialize workflow with template and LLM settings."""
