@@ -43,29 +43,52 @@ class BasicWorkflow:
                             "Keep the exact same function signature and docstring. "
                             "Only respond with the full function implementation.")
 
-    def generate(self, batch_size: int = 1) -> Tuple[str, bool, float]:
+    def generate(self, batch_size: int = 1, iterations: int = 1) -> Tuple[str, bool, float]:
         """Generate, validate and score function versions.
         
         Args:
-            batch_size: Number of candidates to generate and pick best from
+            batch_size: Number of candidates to generate per iteration
+            iterations: Number of iterations to run
             
         Returns:
             Tuple of (best_function_body, is_valid, highest_score)
         """
-        best_body = ""
-        best_score = float("-inf")
-        best_is_valid = False
+        overall_best_body = ""
+        overall_best_score = float("-inf")
+        overall_best_valid = False
         
-        if batch_size > 1:
-            print(f"Running batch of {batch_size} generations...")
+        for iteration in range(iterations):
+            print(f"\n--- Iteration {iteration + 1}/{iterations} ---")
+            best_body = ""
+            best_score = float("-inf")
+            best_is_valid = False
+            
+            if batch_size > 1:
+                print(f"Generating {batch_size} candidates...")
         
         for i in range(batch_size):
             # Build the prompt
+            # Get best from previous iterations
+            top_funcs = sorted(
+                [item for item in self.storage.items() if hasattr(item, 'func')],
+                key=lambda x: getattr(x, 'score', float('-inf')),
+                reverse=True
+            )[:3]
+
+            examples = ""
+            for i, item in enumerate(top_funcs):
+                examples += (
+                    f"\n\nExample {i+1} (Score: {getattr(item, 'score', 0):.2f}):\n"
+                    f"{self.template_processor.get_function_heading()}\n"
+                    f"{getattr(item, 'func', '')}"
+                )
+
             prompt = (
-                f"{self.prompt_header}\n\n"
+                f"{self.prompt_header}\n"
                 f"Current implementation:\n"
                 f"{self.template_processor.get_function_heading()}\n"
-                f"{self.template_processor.get_function_body()}"
+                f"{self.template_processor.get_function_body()}\n"
+                f"\nPrevious best examples:{examples}"
             )
             
             # Get LLM response
@@ -93,7 +116,18 @@ class BasicWorkflow:
                 best_score = score
                 best_is_valid = is_valid
         
-        if batch_size > 1 and best_score > float("-inf"):
-            print(f"Selected best candidate with score: {best_score:.2f}")
+            # Store iteration results
+            storage_item = self.storage.new()
+            storage_item.func = best_body
+            storage_item.score = best_score
+            storage_item.valid = best_is_valid
+
+            # Track overall best
+            if best_score > overall_best_score:
+                overall_best_body = best_body
+                overall_best_score = best_score
+                overall_best_valid = best_is_valid
+                
+                print(f"New best score: {best_score:.2f}")
         
-        return best_body, best_is_valid, best_score
+        return overall_best_body, overall_best_valid, overall_best_score
