@@ -3,6 +3,7 @@ import sys
 from typing import Optional
 from funch.version import __version__
 from funch.llm import LLMClient
+from funch.workflow import BasicWorkflow
 
 def read_stdin_prompt() -> str:
     """Read prompt from stdin with user hint."""
@@ -32,6 +33,18 @@ def main():
         const="",
         help="Prompt to send to the LLM (read from stdin if not provided)"
     )
+    parser.add_argument(
+        "--workflow",
+        choices=["basic"],
+        default="basic",
+        help="Workflow to use when template file is provided (default: basic)"
+    )
+    parser.add_argument(
+        "template_file",
+        nargs="?", 
+        default=None,
+        help="Template file to use with workflow if --ask is not set"
+    )
     
     args = parser.parse_args()
     
@@ -42,6 +55,14 @@ def main():
         client = LLMClient(model=args.model)
         response = client.invoke(prompt)
         print(response)
+    elif args.template_file:
+        if args.workflow == "basic":
+            workflow = BasicWorkflow(args.template_file, args.model)
+            result, is_valid, score = workflow.generate()
+            print(f"Generated function:\n{result}")
+            print(f"Validation: {'✅' if is_valid else '❌'}")
+            if score is not None:
+                print(f"Score: {score}")
     else:
         parser.print_help()
 
