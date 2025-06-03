@@ -1,6 +1,7 @@
 import argparse
 import json
 import sys
+from .workflow.basic import Verbosity
 from typing import Optional
 from funch.version import __version__
 from funch.llm import LLMClient
@@ -19,7 +20,13 @@ def main():
     """Main entry point for the CLI."""
     parser = argparse.ArgumentParser(description="funch command line interface")
     parser.add_argument(
-        "-v", "--version", 
+        "-v", "--verbosity",
+        type=int,
+        default=1,
+        help="Set verbosity level (0=silent, 1=basic, 2=detailed, 3=debug)"
+    )
+    parser.add_argument(
+        "--version", 
         action="store_true",
         help="Show package version"
     )
@@ -110,11 +117,12 @@ def main():
                     return
             
             workflow = BasicWorkflow(
-                args.template_file, 
+                args.template_file,
                 args.model,
                 temperature=args.temperature,
                 tag=args.run_tag,
-                score_input=score_input
+                score_input=score_input,
+                verbosity=args.verbosity
             )
             result, is_valid, score = workflow.generate(
                 batch_size=args.batch_size,

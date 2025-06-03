@@ -1,6 +1,47 @@
 from typing import Optional, Tuple, Any
 import os
+import logging
+from enum import IntEnum
 from pathlib import Path
+
+class Verbosity(IntEnum):
+    SILENT = 0
+    BASIC = 1
+    DETAILED = 2
+    DEBUG = 3
+
+class BasicLogger:
+    def __init__(self, verbosity=Verbosity.BASIC):
+        self.verbosity = verbosity
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.DEBUG)
+        
+        ch = logging.StreamHandler()
+        if verbosity >= Verbosity.DEBUG:
+            ch.setLevel(logging.DEBUG)
+        elif verbosity >= Verbosity.DETAILED:
+            ch.setLevel(logging.INFO)
+        else:
+            ch.setLevel(logging.WARNING)
+            
+        formatter = logging.Formatter('%(levelname)s: %(message)s')
+        ch.setFormatter(formatter)
+        self.logger.addHandler(ch)
+
+    def debug(self, msg):
+        if self.verbosity >= Verbosity.DEBUG:
+            self.logger.debug(msg)
+
+    def info(self, msg):
+        if self.verbosity >= Verbosity.DETAILED:
+            self.logger.info(msg)
+
+    def warning(self, msg):
+        if self.verbosity >= Verbosity.BASIC:
+            self.logger.warning(msg)
+
+    def error(self, msg):
+        self.logger.error(msg)
 from funch.evaluator.from_template import FromTemplate
 from funch.llm import LLMClient
 from funch.parsers.function_body import parse_function_body
@@ -9,13 +50,14 @@ from funch.storage.string_database.plain_database import PlainStringDatabase
 
 class BasicWorkflow:
     def __init__(
-        self, 
-        template_path: str, 
+        self,
+        template_path: str,
         llm_model: str = "deepseek-chat",
         temperature: float = 0.7,
         tag: Optional[str] = None,
         score_input: Any = None,
-        storage: Optional[ItemStorage] = None
+        storage: Optional[ItemStorage] = None,
+        verbosity: int = Verbosity.BASIC
     ):
         """Initialize workflow with template and LLM settings.
         
@@ -39,6 +81,7 @@ class BasicWorkflow:
             tag, score_input
         )
         self.storage = storage if storage is not None else ItemStorage(PlainStringDatabase())
+        self.logger = BasicLogger(verbosity)
         self.prompt_header = ("Please generate an improved version of this Python function. "
                             "You should be creative and willing to try new methods. "
                             "Keep the exact same function signature and docstring. "
@@ -97,7 +140,7 @@ class BasicWorkflow:
         overall_best_valid = False
         
         for iteration in range(iterations):
-            print(f"\n--- Iteration {iteration + 1}/{iterations} ---")
+            self.logger.info(f"\n--- Iteration {iteration + 1}/{iterations} ---")
             best_body = ""
             best_score = float("-inf")
             best_is_valid = False
@@ -112,8 +155,8 @@ class BasicWorkflow:
                 new_body, is_valid, score = self._process_candidate(response)
                 
                 if batch_size > 1:
-                    print(f"  Candidate #{candidate_num+1} score: {score:.2f} "
-                        f"{'✅' if is_valid else '❌'}")
+                    self.logger.info(f"Candidate #{candidate_num+1} score: {score:.2f} "
+                                  f"{'✅' if is_valid else '❌'}")
 
                 if score > best_score:
                     best_body, best_score, best_is_valid = new_body, score, is_valid
@@ -125,6 +168,6 @@ class BasicWorkflow:
                     if score > overall_best_score:
                         overall_best_body, overall_best_score = best_body, best_score
                         overall_best_valid = best_is_valid
-                        print(f"New best score: {best_score:.2f}")
+                        self.logger.debug(f"New best score: {best_score:.2f}")
             
         return overall_best_body, overall_best_valid, overall_best_score

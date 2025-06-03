@@ -5,6 +5,9 @@ import copy
 import signal
 import ast
 import traceback
+import logging
+
+logger = logging.getLogger(__name__)
 
 from typing import Any, Callable, Dict, Optional
 
@@ -53,8 +56,8 @@ class FromTemplate:
             )
         ]
         if not validate_funcs:
-            print(
-                "Warning: no validate function found, is_valid will always return True"
+            logger.warning(
+                "No validate function found, is_valid will always return True"
             )
 
         def f(function_body: str) -> bool:
@@ -184,5 +187,5 @@ class FromTemplate:
             return res, True
         except Exception as e:
             error_msg = "".join(traceback.format_exception(type(e), e, e.__traceback__))
-            print(f"Error in Sandbox:\n{error_msg}")
+            logger.error(f"Error in Sandbox:\n{error_msg}")
             return None, False
