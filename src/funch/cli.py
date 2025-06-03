@@ -135,6 +135,7 @@ def main():
                     temperature=args.temperature,
                     tag=args.run_tag,
                     score_input=score_input,
+                    storage=ItemStorage(SQLiteStringDatabase(args.db_file)),
                     verbosity=args.verbosity
                 )
             else:
