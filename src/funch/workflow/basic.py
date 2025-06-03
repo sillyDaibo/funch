@@ -144,14 +144,20 @@ class BasicWorkflow:
         overall_best_score = float("-inf")
         overall_best_valid = False
         
+        def _update_progress():
+            if self.logger.verbosity < Verbosity.DEBUG:
+                print(f"\r🚀 Process: {iteration+1}/{iterations} iters | "
+                      f"{candidate_num+1}/{batch_size} batch | "
+                      f"{total_generated} total | "
+                      f"Best: {overall_best_score:.2f}", end="", flush=True)
+        
         for iteration in range(iterations):
-            self.logger.info(f"\n--- Iteration {iteration + 1}/{iterations} ---")
             best_body = ""
-            best_score = float("-inf")
+            best_score = float("-inf") 
             best_is_valid = False
             
-            if batch_size > 1:
-                print(f"Generating {batch_size} candidates...")
+            if self.logger.verbosity >= Verbosity.DETAILED:
+                self.logger.info(f"\n--- Iteration {iteration + 1}/{iterations} ---")
         
             for candidate_num in range(batch_size):
                 prompt = self._build_prompt(candidate_num)
@@ -165,9 +171,12 @@ class BasicWorkflow:
                 else:
                     total_failed += 1
 
-                if batch_size > 1:
+                _update_progress()
+                
+                if batch_size > 1 and self.logger.verbosity >= Verbosity.DETAILED:
                     self.logger.info(f"Candidate #{candidate_num+1} score: {score:.2f} "
                                   f"{'✅' if is_valid else '❌'}")
+                                  
 
                 if score > best_score:
                     best_body, best_score, best_is_valid = new_body, score, is_valid
