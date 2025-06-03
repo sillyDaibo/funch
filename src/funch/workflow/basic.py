@@ -157,7 +157,7 @@ class BasicWorkflow:
             best_is_valid = False
             
             if self.logger.verbosity >= Verbosity.DETAILED:
-                self.logger.info(f"\n--- Iteration {iteration + 1}/{iterations} ---")
+                self.logger.info(f"--- Iteration {iteration + 1}/{iterations} ---")
         
             for candidate_num in range(batch_size):
                 prompt = self._build_prompt(candidate_num)
