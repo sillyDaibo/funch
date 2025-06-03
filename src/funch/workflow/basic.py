@@ -190,11 +190,11 @@ class BasicWorkflow:
                         overall_best_valid = best_is_valid
                         self.logger.debug(f"New best score: {best_score:.2f}")
             
-        self.logger.info(
-            f"\n--- Process Summary ---\n"
-            f"Total candidates generated: {total_generated}\n"
-            f"Valid candidates: {total_valid} ({total_valid/total_generated:.1%})\n"
-            f"Failed candidates: {total_failed} ({total_failed/total_generated:.1%})\n"
-            f"Best score achieved: {overall_best_score:.2f}\n"
-        )
+        if self.logger.verbosity < Verbosity.DEBUG:
+            print()  # New line after progress
+            
+        self.logger.info(f"\n🎉 Optimization Complete! "
+                       f"(Total: {total_generated} | "
+                       f"Valid: {total_valid/total_generated:.0%} | "
+                       f"Best: {overall_best_score:.2f})")
         return overall_best_body, overall_best_valid, overall_best_score
