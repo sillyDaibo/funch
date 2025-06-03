@@ -64,7 +64,8 @@ class IslandWorkflow:
                     tag=tag,
                     score_input=score_input,
                     storage=island_storage,
-                    verbosity=verbosity
+                    verbosity=verbosity,
+                    logger=self.logger  # Share the same logger instance
                 )
             )
 

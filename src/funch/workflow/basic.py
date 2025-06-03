@@ -59,7 +59,8 @@ class BasicWorkflow:
         tag: Optional[str] = None,
         score_input: Any = None,
         storage: Optional[ItemStorage] = None,
-        verbosity: int = Verbosity.BASIC
+        verbosity: int = Verbosity.BASIC,
+        logger: Optional[BasicLogger] = None
     ):
         """Initialize workflow with template and LLM settings.
         
@@ -68,6 +69,7 @@ class BasicWorkflow:
             llm_model: Name of LLM model to use
             tag: Tag for scoring function (None uses first found)
             score_input: Input to pass to scoring function
+            logger: Optional BasicLogger instance to use (will create one if None)
         """
         if not os.path.exists(template_path):
             raise FileNotFoundError(f"Template file not found: {template_path}")
@@ -83,7 +85,7 @@ class BasicWorkflow:
             tag, score_input
         )
         self.storage = storage if storage is not None else ItemStorage(PlainStringDatabase())
-        self.logger = BasicLogger(verbosity)
+        self.logger = logger if logger is not None else BasicLogger(verbosity)
         self.prompt_header = ("Please generate an improved version of this Python function. "
                             "You should be creative and willing to try new methods. "
                             "Keep the exact same function signature and docstring. "
