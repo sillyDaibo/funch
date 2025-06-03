@@ -187,5 +187,5 @@ class FromTemplate:
             return res, True
         except Exception as e:
             error_msg = "".join(traceback.format_exception(type(e), e, e.__traceback__))
-            logger.error(f"Error in Sandbox:\n{error_msg}")
+            logger.warning(f"Error in Sandbox:\n{error_msg}")
             return None, False

@@ -135,6 +135,9 @@ class BasicWorkflow:
         Returns:
             Tuple of (best_function_body, is_valid, highest_score)
         """
+        total_generated = 0
+        total_valid = 0
+        total_failed = 0
         overall_best_body = ""
         overall_best_score = float("-inf")
         overall_best_valid = False
@@ -154,6 +157,12 @@ class BasicWorkflow:
                 response = self.llm.invoke(prompt)
                 new_body, is_valid, score = self._process_candidate(response)
                 
+                total_generated += 1
+                if is_valid:
+                    total_valid += 1
+                else:
+                    total_failed += 1
+
                 if batch_size > 1:
                     self.logger.info(f"Candidate #{candidate_num+1} score: {score:.2f} "
                                   f"{'✅' if is_valid else '❌'}")
@@ -170,4 +179,11 @@ class BasicWorkflow:
                         overall_best_valid = best_is_valid
                         self.logger.debug(f"New best score: {best_score:.2f}")
             
+        self.logger.info(
+            f"\n--- Process Summary ---\n"
+            f"Total candidates generated: {total_generated}\n"
+            f"Valid candidates: {total_valid} ({total_valid/total_generated:.1%})\n"
+            f"Failed candidates: {total_failed} ({total_failed/total_generated:.1%})\n"
+            f"Best score achieved: {overall_best_score:.2f}\n"
+        )
         return overall_best_body, overall_best_valid, overall_best_score
