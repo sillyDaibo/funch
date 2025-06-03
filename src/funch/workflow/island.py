@@ -42,7 +42,7 @@ class IslandWorkflow:
             raise ValueError("num_islands must be at least 1")
             
         # Setup shared storage with splits
-        self.shared_storage = storage if storage is not None else ItemStorage(PlainStringDatabase())
+        self.shared_storage = storage if storage is not None else ItemStorage(SQLiteStringDatabase(":memory:"))
         self.num_islands = num_islands
         self.logger = BasicLogger(verbosity)
         

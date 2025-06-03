@@ -66,6 +66,11 @@ def main():
         help="Template file to use with workflow if --ask is not set"
     )
     parser.add_argument(
+        "--db-file",
+        default=":memory:",
+        help="SQLite database filename (default: :memory:)"
+    )
+    parser.add_argument(
         "--batch-size",
         type=int,
         default=1,
@@ -139,6 +144,7 @@ def main():
                     temperature=args.temperature,
                     tag=args.run_tag,
                     score_input=score_input,
+                    storage=ItemStorage(SQLiteStringDatabase(args.db_file)),
                     verbosity=args.verbosity
                 )
             result, is_valid, score = workflow.generate(

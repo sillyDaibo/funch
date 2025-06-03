@@ -85,7 +85,7 @@ class BasicWorkflow:
         self.score_evaluator = self.template_processor.build_score_evaluator(
             tag, score_input
         )
-        self.storage = storage if storage is not None else ItemStorage(PlainStringDatabase())
+        self.storage = storage if storage is not None else ItemStorage(SQLiteStringDatabase(":memory:"))
         self.logger = logger if logger is not None else BasicLogger(verbosity)
         self.prompt_header = ("Please generate an improved version of this Python function. "
                             "You should be creative and willing to try new methods. "
