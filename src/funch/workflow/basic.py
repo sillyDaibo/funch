@@ -1,6 +1,7 @@
-from typing import Optional, Tuple, Any
+from typing import Optional, Tuple, Any, List
 import os
 import logging
+import asyncio
 from enum import IntEnum
 from pathlib import Path
 
@@ -129,6 +130,13 @@ class BasicWorkflow:
             score = self.score_evaluator(new_body)
         return new_body, is_valid, score
 
+    async def _generate_batch(self, prompts: List[str]) -> List[tuple[str, bool, float]]:
+        """Generate and process a batch of candidates asynchronously."""
+        responses = await asyncio.gather(*[
+            self.llm.invoke_async(prompt) for prompt in prompts
+        ])
+        return [self._process_candidate(response) for response in responses]
+
     def generate(self, batch_size: int = 1, iterations: int = 1) -> Tuple[str, bool, float]:
         """Generate, validate and score function versions.
         
@@ -161,11 +169,13 @@ class BasicWorkflow:
             if self.logger.verbosity >= Verbosity.DETAILED:
                 self.logger.info(f"--- Iteration {iteration + 1}/{iterations} ---")
         
-            for candidate_num in range(batch_size):
-                prompt = self._build_prompt(candidate_num)
-                
-                response = self.llm.invoke(prompt)
-                new_body, is_valid, score = self._process_candidate(response)
+            # Build all prompts first
+            prompts = [self._build_prompt(candidate_num) for candidate_num in range(batch_size)]
+            
+            # Process batch async
+            batch_results = asyncio.run(self._generate_batch(prompts))
+            
+            for candidate_num, (new_body, is_valid, score) in enumerate(batch_results):
                 
                 total_generated += 1
                 if is_valid:
