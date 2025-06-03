@@ -3,7 +3,7 @@ from pathlib import Path
 
 from funch.storage.item_storage.storage import ItemStorage
 from funch.storage.item_storage.split_storage import split_item_storage
-from funch.storage.string_database.plain_database import PlainStringDatabase
+from funch.storage.string_database.sqlite_database import SQLiteStringDatabase
 
 from .basic import BasicWorkflow, BasicLogger, Verbosity
 
@@ -41,8 +41,12 @@ class IslandWorkflow:
         if num_islands < 1:
             raise ValueError("num_islands must be at least 1")
             
-        # Setup shared storage with splits
-        self.shared_storage = storage if storage is not None else ItemStorage(SQLiteStringDatabase(":memory:"))
+        # Setup shared storage with splits - preserve existing storage if provided
+        if storage is None:
+            db = SQLiteStringDatabase(":memory:")
+            self.shared_storage = ItemStorage(db)
+        else:
+            self.shared_storage = storage
         self.num_islands = num_islands
         self.logger = BasicLogger(verbosity)
         
