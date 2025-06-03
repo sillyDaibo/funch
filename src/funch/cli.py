@@ -122,16 +122,25 @@ def main():
                     print(f"Error loading input file: {e}")
                     return
             
-            workflow_cls = IslandWorkflow if args.workflow == "island" else BasicWorkflow
-            workflow = workflow_cls(
-                args.template_file,
-                num_islands=args.num_islands if args.workflow == "island" else 1,
-                llm_model=args.model,
-                temperature=args.temperature,
-                tag=args.run_tag,
-                score_input=score_input,
-                verbosity=args.verbosity
-            )
+            if args.workflow == "island":
+                workflow = IslandWorkflow(
+                    args.template_file,
+                    num_islands=args.num_islands,
+                    llm_model=args.model,
+                    temperature=args.temperature,
+                    tag=args.run_tag,
+                    score_input=score_input,
+                    verbosity=args.verbosity
+                )
+            else:
+                workflow = BasicWorkflow(
+                    args.template_file,
+                    llm_model=args.model,
+                    temperature=args.temperature,
+                    tag=args.run_tag,
+                    score_input=score_input,
+                    verbosity=args.verbosity
+                )
             result, is_valid, score = workflow.generate(
                 batch_size=args.batch_size,
                 iterations=args.iterations
