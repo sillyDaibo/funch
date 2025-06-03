@@ -60,3 +60,36 @@ class LLMClient:
         )
 
         return response.choices[0].message.content
+
+    async def invoke_async(
+        self, 
+        prompt: str,
+        system_message: Optional[str] = None,
+        **kwargs: Dict[str, Any]
+    ) -> str:
+        """Asynchronously invoke the LLM with a prompt.
+        
+        Args:
+            prompt: User prompt/message
+            system_message: Optional system message
+            **kwargs: Additional parameters for the LLM call
+            
+        Returns:
+            Generated text response
+        """
+        messages = []
+        if system_message:
+            messages.append({"role": "system", "content": system_message})
+        messages.append({"role": "user", "content": prompt})
+
+        response = await litellm.acompletion(
+            model=self.model,
+            messages=messages,
+            temperature=self.temperature,
+            max_tokens=self.max_tokens,
+            api_key=self.api_key,
+            api_base=self.api_base,
+            **kwargs
+        )
+
+        return response.choices[0].message.content
