@@ -4,6 +4,13 @@ import logging
 from enum import IntEnum
 from pathlib import Path
 
+from funch.evaluator.from_template import FromTemplate
+from funch.llm import LLMClient
+from funch.parsers.function_body import parse_function_body
+from funch.storage.item_storage.storage import ItemStorage
+from funch.storage.string_database.plain_database import PlainStringDatabase
+
+
 class Verbosity(IntEnum):
     SILENT = 0
     BASIC = 1
@@ -42,11 +49,6 @@ class BasicLogger:
 
     def error(self, msg):
         self.logger.error(msg)
-from funch.evaluator.from_template import FromTemplate
-from funch.llm import LLMClient
-from funch.parsers.function_body import parse_function_body
-from funch.storage.item_storage.storage import ItemStorage
-from funch.storage.string_database.plain_database import PlainStringDatabase
 
 class BasicWorkflow:
     def __init__(
