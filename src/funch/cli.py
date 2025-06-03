@@ -54,6 +54,12 @@ def main():
         help="Workflow to use when template file is provided (default: basic)"
     )
     parser.add_argument(
+        "--num-islands",
+        type=int,
+        default=1,
+        help="Number of islands to use with island workflow (default: 1)"
+    )
+    parser.add_argument(
         "template_file",
         nargs="?", 
         default=None,
@@ -119,7 +125,8 @@ def main():
             workflow_cls = IslandWorkflow if args.workflow == "island" else BasicWorkflow
             workflow = workflow_cls(
                 args.template_file,
-                args.model,
+                num_islands=args.num_islands if args.workflow == "island" else 1,
+                llm_model=args.model,
                 temperature=args.temperature,
                 tag=args.run_tag,
                 score_input=score_input,
