@@ -6,6 +6,8 @@ from typing import Optional
 from funch.version import __version__
 from funch.llm import LLMClient
 from funch.workflow import BasicWorkflow, IslandWorkflow
+from funch.storage.item_storage.storage import ItemStorage
+from funch.storage.string_database.sqlite_database import SQLiteStringDatabase
 
 def read_stdin_prompt() -> str:
     """Read prompt from stdin with user hint."""
