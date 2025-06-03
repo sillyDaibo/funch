@@ -178,8 +178,10 @@ class BasicWorkflow:
                                   f"{'✅' if is_valid else '❌'}")
                                   
 
+                # Treat -inf scores as invalid
+                effective_valid = is_valid and score != float('-inf')
                 if score > best_score:
-                    best_body, best_score, best_is_valid = new_body, score, is_valid
+                    best_body, best_score, best_is_valid = new_body, score, effective_valid
                     storage_item = self.storage.new()
                     storage_item.func = best_body
                     storage_item.score = best_score
@@ -197,4 +199,10 @@ class BasicWorkflow:
                        f"(Total: {total_generated} | "
                        f"Valid: {total_valid/total_generated:.0%} | "
                        f"Best: {overall_best_score:.2f})")
+        
+        if total_valid < total_generated:
+            self.logger.warning(
+                f"⚠️  Some generated functions were invalid. Check 'sandbox_errors.log' "
+                f"for details about the failures."
+            )
         return overall_best_body, overall_best_valid, overall_best_score

@@ -132,6 +132,8 @@ def main():
             print(f"Validation: {'✅' if is_valid else '❌'}")
             if score is not None:
                 print(f"Score: {score}")
+            if not is_valid:
+                print("\n⚠️  The generated function was invalid. Check 'sandbox_errors.log' for error details.")
     else:
         parser.print_help()
 
