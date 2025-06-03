@@ -5,7 +5,7 @@ from .workflow.basic import Verbosity
 from typing import Optional
 from funch.version import __version__
 from funch.llm import LLMClient
-from funch.workflow import BasicWorkflow
+from funch.workflow import BasicWorkflow, IslandWorkflow
 
 def read_stdin_prompt() -> str:
     """Read prompt from stdin with user hint."""
@@ -49,7 +49,7 @@ def main():
     )
     parser.add_argument(
         "--workflow",
-        choices=["basic"],
+        choices=["basic", "island"],
         default="basic",
         help="Workflow to use when template file is provided (default: basic)"
     )
@@ -63,7 +63,7 @@ def main():
         "--batch-size",
         type=int,
         default=1,
-        help="Number of candidates to generate and pick best from (default: 1)"
+        help="Number of candidates to generate and pick best from per island (default: 1)"
     )
     parser.add_argument(
         "--iterations",
@@ -116,7 +116,8 @@ def main():
                     print(f"Error loading input file: {e}")
                     return
             
-            workflow = BasicWorkflow(
+            workflow_cls = IslandWorkflow if args.workflow == "island" else BasicWorkflow
+            workflow = workflow_cls(
                 args.template_file,
                 args.model,
                 temperature=args.temperature,
