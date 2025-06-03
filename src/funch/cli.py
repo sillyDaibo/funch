@@ -98,7 +98,7 @@ def main():
         response = client.invoke(prompt)
         print(response)
     elif args.template_file:
-        if args.workflow == "basic":
+        if args.workflow in ("basic", "island"):
             score_input = None
             if args.score_input:
                 try:
