@@ -99,16 +99,21 @@ class BasicWorkflow:
 
     def _build_prompt(self, candidate_num: int) -> str:
         """Build the prompt for the LLM including best previous examples."""
-        top_funcs = sorted(
-            [item for item in self.storage.items() if hasattr(item, 'func')],
-            key=lambda x: getattr(x, 'score', float('-inf')),
-            reverse=True
-        )[:3]
+        # Get all available functions sorted by score (highest last)
+        available_funcs = [item for item in self.storage.items() if hasattr(item, 'func')]
+        sorted_funcs = sorted(
+            available_funcs,
+            key=lambda x: getattr(x, 'score', float('-inf'))
+        )  # Sort ascending so highest score is last
+        
+        # Take at most 3 functions, keeping ordering (so highest score remains last)
+        top_funcs = sorted_funcs[-3:]
 
         examples = ""
         for example_num, item in enumerate(top_funcs):
             examples += (
-                f"\n\nExample {example_num+1} (Score: {getattr(item, 'score', 0):.2f}):\n"
+                f"\n\nExample {'ABC'[example_num] if len(top_funcs) == 3 else example_num+1} "
+                f"(Score: {getattr(item, 'score', 0):.2f}):\n"
                 f"{self.template_processor.get_function_heading()}\n"
                 f"{getattr(item, 'func', '')}"
             )
