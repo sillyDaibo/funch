@@ -6,6 +6,7 @@ import signal
 import ast
 import traceback
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -163,6 +164,17 @@ class FromTemplate:
         program.get_function(self.func_to_evolve).body = function_body
         return str(program)
 
+    def __log_sandbox_error(self, error_msg: str) -> None:
+        """Log sandbox errors to a file."""
+        error_log_path = "sandbox_errors.log"
+        try:
+            with open(error_log_path, "a") as f:
+                f.write(f"--- ERROR at {time.strftime('%Y-%m-%d %H:%M:%S')} ---\n")
+                f.write(error_msg)
+                f.write("\n\n")
+        except Exception as e:
+            logger.error(f"Failed to write to error log: {e}")
+
     def __sandbox(
         self, program: str, function_to_run: str, test_input: Any, timeout_seconds: int
     ) -> tuple[Any, bool]:
@@ -187,5 +199,5 @@ class FromTemplate:
             return res, True
         except Exception as e:
             error_msg = "".join(traceback.format_exception(type(e), e, e.__traceback__))
-            logger.warning(f"Error in Sandbox:\n{error_msg}")
+            self.__log_sandbox_error(error_msg)
             return None, False
