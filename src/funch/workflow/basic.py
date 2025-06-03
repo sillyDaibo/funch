@@ -10,6 +10,7 @@ from funch.llm import LLMClient
 from funch.parsers.function_body import parse_function_body
 from funch.storage.item_storage.storage import ItemStorage
 from funch.storage.string_database.plain_database import PlainStringDatabase
+from funch.storage import SQLiteStringDatabase
 
 
 class Verbosity(IntEnum):
